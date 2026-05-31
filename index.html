@@ -264,7 +264,7 @@ tbody tr:last-child td{border-bottom:none;font-weight:600;font-size:13px}
       </div>
       <div class="footnote" style="margin-top:.75rem">
         LPG: 14.2 kg · 11,800 kCal/kg · 60% efficiency = 100,536 useful kCal/cylinder.<br>
-        PNG: 9,082 kCal/SCM (PNGRB) · 66% efficiency = 5,994 useful kCal/SCM.<br>
+        PNG: 9,082 kCal/SCM (PNGRB) · 66% efficiency = 5,994 useful kCal/SCM. PNG cost = gas charges only (no service charge).<br>
         PNG price escalation 4.5%/yr · service charge 5%/yr · cylinder usage +3%/yr.<br>
         LPG: Bull 3% · Base 6% · Bear 9% p.a. Realistic = 0.3B+0.4Base+0.3Bear.<br>
         ₹2,000 LPG deposit refund applied to PNG outflow in Year 1. PNG min bill ₹100/month.
@@ -322,16 +322,15 @@ function calculate(){
   const usefulPerSCM = 9082 * 0.66;           // 5,994.12 kCal
   const scmNeeded    = (cyls * usefulPerCyl) / usefulPerSCM;
 
-  // === PNG monthly variable cost ===
-  const PNG_P0=48.5, SVC0=31, MIN_BILL=100;
-  const PNG_ESC=0.045, SVC_ESC=0.05, USAGE_G=0.03;
+  // === PNG monthly variable cost (gas charges only, no service charge) ===
+  const PNG_P0=48.5;
+  const PNG_ESC=0.045, USAGE_G=0.03;
 
   function pngVar(mo){
     const yr=(mo-1)/12;
     const p=PNG_P0*Math.pow(1+PNG_ESC,yr);
-    const s=SVC0*Math.pow(1+SVC_ESC,yr);
     const q=scmNeeded*Math.pow(1+USAGE_G,yr);
-    return Math.max(q*p+s, MIN_BILL);
+    return q*p;
   }
 
   // === Scheme payment per month ===
@@ -347,10 +346,11 @@ function calculate(){
     return 0;
   }
 
-  // === LPG monthly cost per scenario ===
+  // === LPG monthly cost per scenario (includes ₹30/cylinder transport) ===
+  const LPG_TRANSPORT=30;
   function lpgMo(mo, g){
     const yr=Math.floor((mo-1)/12);
-    const p=lpgPrice*Math.pow(1+g,yr);
+    const p=(lpgPrice+LPG_TRANSPORT)*Math.pow(1+g,yr);
     const c=cyls*Math.pow(1+USAGE_G,yr);
     return c*p;
   }
@@ -369,7 +369,7 @@ function calculate(){
 
   const real=0.3*cLpgBull+0.4*cLpgBase+0.3*cLpgBear;
   const hero=years[9].s;
-  const moSave=(cyls*lpgPrice) - Math.max(scmNeeded*PNG_P0+SVC0, MIN_BILL);
+  const moSave=(cyls*(lpgPrice+LPG_TRANSPORT)) - (scmNeeded*PNG_P0);
 
   // === DOM updates ===
   document.getElementById('enote').innerHTML=
@@ -380,8 +380,8 @@ function calculate(){
   document.getElementById('heroSub').textContent=
     `≈ ${fmt(hero/120)}/month average · scheme: ${selScheme==='A'?'₹6,000 one-time':selScheme==='B'?'₹100 + ₹500×10 bi-monthly':'₹1/day for 25 yrs'}`;
 
-  document.getElementById('mLpg').textContent=fmt(cyls*lpgPrice);
-  document.getElementById('mPng').textContent=fmt(Math.max(scmNeeded*PNG_P0+SVC0, MIN_BILL));
+  document.getElementById('mLpg').textContent=fmt(cyls*(lpgPrice+LPG_TRANSPORT));
+  document.getElementById('mPng').textContent=fmt(scmNeeded*PNG_P0);
   document.getElementById('mScm').textContent=scmNeeded.toFixed(2)+' SCM';
   document.getElementById('mSave').textContent=fmt(moSave);
 
