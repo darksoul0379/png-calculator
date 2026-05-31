@@ -174,7 +174,7 @@ tbody tr:last-child td{border-bottom:none;font-weight:600;font-size:13px}
         <div class="sc-desc">No upfront · ₹365/yr · 25 years</div>
       </div>
     </div>
-    <div class="scheme-note" id="schemeNote">₹6,000 one-time · ₹2,000 LPG refund applied → net ₹4,000 outflow</div>
+    <div class="scheme-note" id="schemeNote">₹6,000 one-time. ₹2,000 LPG deposit refund reduces your PNG outflow in Year 1.</div>
   </div>
 
   <button class="cta" onclick="calculate()">Calculate my savings →</button>
@@ -267,7 +267,7 @@ tbody tr:last-child td{border-bottom:none;font-weight:600;font-size:13px}
         PNG: 9,082 kCal/SCM (PNGRB) · 66% efficiency = 5,994 useful kCal/SCM.<br>
         PNG price escalation 4.5%/yr · service charge 5%/yr · cylinder usage +3%/yr.<br>
         LPG: Bull 3% · Base 6% · Bear 9% p.a. Realistic = 0.3B+0.4Base+0.3Bear.<br>
-        ₹2,000 LPG cylinder security deposit refund applied. PNG min bill ₹100/month.
+        ₹2,000 LPG deposit refund applied to PNG outflow in Year 1. PNG min bill ₹100/month.
       </div>
     </div>
 
@@ -285,9 +285,9 @@ const HINTS={
   '3.0':'3 cylinders per month — heavy usage'
 };
 const SNOTES={
-  A:'₹6,000 one-time · ₹2,000 LPG refund applied → net ₹4,000 outflow',
-  B:'₹100 upfront + ₹500 × 10 bi-monthly = ₹5,100 total · ₹2,000 refund applied in Month 1',
-  C:'No upfront · ₹365/year fixed for 25 years · ₹2,000 refund — ask BPCL for refund process'
+  A:'₹6,000 one-time. ₹2,000 LPG deposit refund reduces your PNG outflow in Year 1.',
+  B:'₹100 upfront + ₹500 × 10 bi-monthly = ₹5,100 total. ₹2,000 LPG deposit refund reduces your PNG outflow in Year 1.',
+  C:'No upfront. ₹365/year fixed for 25 years. ₹2,000 LPG deposit refund reduces your PNG outflow in Year 1.'
 };
 
 let selCyl=0.5, selScheme='A';
@@ -336,14 +336,14 @@ function calculate(){
 
   // === Scheme payment per month ===
   function schemePay(mo){
-    if(selScheme==='A') return mo===1 ? 6000-2000 : 0;
+    if(selScheme==='A') return mo===1 ? 6000 : 0;
     if(selScheme==='B'){
       let p=0;
-      if(mo===1) p+=100-2000; // net -1900 (refund)
+      if(mo===1) p+=100;
       if([2,4,6,8,10,12,14,16,18,20].includes(mo)) p+=500;
       return p;
     }
-    if(selScheme==='C') return 365/12; // ~30.4/mo
+    if(selScheme==='C') return 365/12;
     return 0;
   }
 
@@ -363,6 +363,7 @@ function calculate(){
     cLpgBull+=lpgMo(mo,0.03);
     cLpgBear+=lpgMo(mo,0.09);
     cPng+=pngVar(mo)+schemePay(mo);
+    if(mo===1) cPng-=2000;
     if(mo%12===0) years.push({yr:mo/12,lb:cLpgBase,ll:cLpgBull,lr:cLpgBear,p:cPng,s:cLpgBase-cPng});
   }
 
